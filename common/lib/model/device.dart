@@ -35,6 +35,11 @@ class SignalingDiscovery extends DiscoveryMethod with SignalingDiscoveryMappable
   const SignalingDiscovery({required this.signalingServer});
 }
 
+@MappableClass()
+class UsbDiscovery extends DiscoveryMethod with UsbDiscoveryMappable {
+  const UsbDiscovery();
+}
+
 enum TransmissionMethod {
   http('HTTP'),
   webrtc('WebRTC');

@@ -70,6 +70,7 @@ class SettingsService extends PureNotifier<SettingsState> {
     shareViaLinkAutoAccept: _persistence.getShareViaLinkAutoAccept(),
     discoveryTimeout: _persistence.getDiscoveryTimeout(),
     advancedSettings: _persistence.getAdvancedSettingsEnabled(),
+    usbScanEnabled: _persistence.getUsbScanEnabled(),
   );
 
   Future<void> setAlias(String alias) async {
@@ -97,6 +98,13 @@ class SettingsService extends PureNotifier<SettingsState> {
     await _persistence.setAdvancedSettingsEnabled(isEnabled);
     state = state.copyWith(
       advancedSettings: isEnabled,
+    );
+  }
+
+  Future<void> setUsbScanEnabled(bool enabled) async {
+    await _persistence.setUsbScanEnabled(enabled);
+    state = state.copyWith(
+      usbScanEnabled: enabled,
     );
   }
 

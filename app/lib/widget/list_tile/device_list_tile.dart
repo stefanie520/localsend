@@ -28,6 +28,8 @@ class DeviceListTile extends StatelessWidget {
     this.onFavoriteTap,
   });
 
+  bool get _isUsb => device.discoveryMethods.any((m) => m is UsbDiscovery);
+
   @override
   Widget build(BuildContext context) {
     final badgeColor = Color.lerp(Theme.of(context).colorScheme.secondaryContainer, Colors.white, 0.3)!;
@@ -52,7 +54,13 @@ class DeviceListTile extends StatelessWidget {
               child: CustomProgressBar(progress: progress!),
             )
           else ...[
-            if (device.ip != null)
+            if (_isUsb)
+              DeviceBadge(
+                backgroundColor: Colors.teal.shade100,
+                foregroundColor: Colors.teal.shade900,
+                label: 'USB • HTTP',
+              )
+            else if (device.ip != null)
               DeviceBadge(
                 backgroundColor: badgeColor,
                 foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,

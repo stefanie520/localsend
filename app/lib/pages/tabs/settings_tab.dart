@@ -14,6 +14,8 @@ import 'package:localsend_app/pages/donation/donation_page.dart';
 import 'package:localsend_app/pages/language_page.dart';
 import 'package:localsend_app/pages/settings/network_interfaces_page.dart';
 import 'package:localsend_app/pages/tabs/settings_tab_controller.dart';
+import 'package:localsend_app/provider/network/usb_scan_android_provider.dart';
+import 'package:localsend_app/provider/network/usb_scan_provider.dart';
 import 'package:localsend_app/provider/settings_provider.dart';
 import 'package:localsend_app/provider/version_provider.dart';
 import 'package:localsend_app/util/alias_generator.dart';
@@ -21,6 +23,7 @@ import 'package:localsend_app/util/device_type_ext.dart';
 import 'package:localsend_app/util/native/macos_channel.dart';
 import 'package:localsend_app/util/native/pick_directory_path.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
+import 'package:localsend_app/util/native/windows/adb_utils.dart';
 import 'package:localsend_app/widget/custom_dropdown_button.dart';
 import 'package:localsend_app/widget/dialogs/encryption_disabled_notice.dart';
 import 'package:localsend_app/widget/dialogs/pin_dialog.dart';
@@ -448,6 +451,40 @@ class SettingsTab extends StatelessWidget {
                               await EncryptionDisabledNotice.open(context);
                             }
                           },
+                        ),
+                      if (checkPlatform([TargetPlatform.windows, TargetPlatform.android]))
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _BooleanEntry(
+                              label: 'USB scan',
+                              value: vm.settings.usbScanEnabled,
+                              onChanged: (b) async {
+                                await ref.notifier(settingsProvider).setUsbScanEnabled(b);
+                                if (b) {
+                                  if (checkPlatform([TargetPlatform.windows])) {
+                                    ref.notifier(usbScanProvider).start();
+                                  } else if (checkPlatform([TargetPlatform.android])) {
+                                    ref.notifier(usbScanAndroidProvider).start();
+                                  }
+                                } else {
+                                  if (checkPlatform([TargetPlatform.windows])) {
+                                    await ref.notifier(usbScanProvider).stop();
+                                  } else if (checkPlatform([TargetPlatform.android])) {
+                                    ref.notifier(usbScanAndroidProvider).stop();
+                                  }
+                                }
+                              },
+                            ),
+                            if (checkPlatform([TargetPlatform.windows]) && vm.settings.usbScanEnabled && !AdbUtils.isAvailable())
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 15),
+                                child: Text(
+                                  'ADB not found. Install ADB or set ADB_PATH environment variable.',
+                                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                                ),
+                              ),
+                          ],
                         ),
                       if (vm.advanced)
                         _SettingsEntry(

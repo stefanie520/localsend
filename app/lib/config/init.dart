@@ -22,6 +22,8 @@ import 'package:localsend_app/provider/app_arguments_provider.dart';
 import 'package:localsend_app/provider/device_info_provider.dart';
 import 'package:localsend_app/provider/network/nearby_devices_provider.dart';
 import 'package:localsend_app/provider/network/server/server_provider.dart';
+import 'package:localsend_app/provider/network/usb_scan_android_provider.dart';
+import 'package:localsend_app/provider/network/usb_scan_provider.dart';
 import 'package:localsend_app/provider/network/webrtc/signaling_provider.dart';
 import 'package:localsend_app/provider/persistence_provider.dart';
 
@@ -226,6 +228,15 @@ Future<void> postInit(BuildContext context, Ref ref, bool appStart) async {
   }
 
   ref.redux(signalingProvider).dispatch(SetupSignalingConnection());
+
+  // Auto-start USB scanning if enabled in settings
+  if (ref.read(settingsProvider).usbScanEnabled) {
+    if (checkPlatform([TargetPlatform.windows])) {
+      ref.notifier(usbScanProvider).start();
+    } else if (checkPlatform([TargetPlatform.android])) {
+      ref.notifier(usbScanAndroidProvider).start();
+    }
+  }
 
   if (appStart) {
     if (defaultTargetPlatform == TargetPlatform.macOS) {
